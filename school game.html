@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Password Game - Online</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .game-container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 500px; text-align: center; }
+        h1 { color: #333; margin-bottom: 5px; }
+        .streak { font-size: 1.2rem; color: #666; }
+        .timer { font-size: 2rem; font-weight: bold; color: #e74c3c; margin: 15px 0; }
+        .hint-box { background: #f9f9f9; border: 1px solid #ddd; padding: 20px; border-radius: 10px; min-height: 80px; display: flex; align-items: center; justify-content: center; font-style: italic; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; font-size: 1.2rem; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; transition: border-color 0.3s; }
+        input:focus { border-color: #3498db; }
+        .feedback { margin-top: 20px; font-weight: bold; min-height: 24px; }
+        .success { color: #27ae60; }
+        .error { color: #c0392b; }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>Password Game</h1>
+    <div class="streak" id="streak">Streak: 0/3</div>
+    <div class="timer" id="timer">20</div>
+    
+    <div class="hint-box" id="hint">Laden...</div>
+    
+    <input type="text" id="gokInput" placeholder="Typ het wachtwoord..." autocomplete="off">
+    
+    <div class="feedback" id="feedback"></div>
+</div>
+
+<script>
+    const woordenLijst = [
+        {woord: "schaduw", fouten: ["schadu", "scaduw"], tip: "Ik loop met je mee, maar heb geen benen. In het donker ben ik weg."},
+        {woord: "stilte", fouten: ["stilt", "stite"], tip: "Als je mijn naam uitspreekt, breek je mij."},
+        {woord: "vlam", fouten: ["vuur", "vlammetje"], tip: "Ik eet alles, maar als ik drink dan ga ik dood."},
+        {woord: "spiegel", fouten: ["spegel", "spigel"], tip: "Ik heb geen stem, maar ik doe alles na wat jij doet."},
+        {woord: "horizon", fouten: ["horison"], tip: "Hoe dichterbij je komt, hoe verder ik wegloop."},
+        {woord: "toekomst", fouten: ["tokomst"], tip: "Ik ben er altijd, maar niemand heeft me ooit gezien."},
+        {woord: "herinnering", fouten: ["herinneringen"], tip: "Ik kom uit het verleden, maar woon in je hoofd."},
+        {woord: "sleutel", fouten: ["sleuteltje"], tip: "Ik kan deuren openen, maar ik kan zelf nooit naar binnen."},
+        {woord: "regen", fouten: ["regent"], tip: "Ik val wel, maar ik sta nooit meer op."},
+        {woord: "echo", fouten: ["eko"], tip: "Ik praat zonder mond en hoor zonder oren."},
+        {woord: "klok", fouten: ["horloge"], tip: "Ik loop altijd, maar kom nooit vooruit."},
+        {woord: "naam", fouten: ["voornaam"], tip: "Ik hoor bij jou, maar anderen gebruiken mij vaker."},
+        {woord: "spin", fouten: ["spinnetje"], tip: "Ik heb acht benen en bouw mijn eigen huis van draad."},
+        {woord: "piano", fouten: ["pianos"], tip: "Ik heb veel tanden, maar ik kan niet bijten."}
+    ];
+
+    let streak = 0;
+    let tijdOver = 20;
+    let huidigItem = null;
+    let timerInterval = null;
+    let beschikbareVragen = [...woordenLijst];
+
+    const hintEl = document.getElementById('hint');
+    const timerEl = document.getElementById('timer');
+    const streakEl = document.getElementById('streak');
+    const inputEl = document.getElementById('gokInput');
+    const feedbackEl = document.getElementById('feedback');
+
+    function nieuwWoord() {
+        if (beschikbareVragen.length === 0) beschikbareVragen = [...woordenLijst];
+        
+        const index = Math.floor(Math.random() * beschikbareVragen.length);
+        huidigItem = beschikbareVragen[index];
+        beschikbareVragen.splice(index, 1);
+        
+        hintEl.innerText = huidigItem.tip;
+        tijdOver = 20;
+        inputEl.value = "";
+        feedbackEl.innerText = "";
+        inputEl.focus();
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            tijdOver--;
+            timerEl.innerText = tijdOver;
+            if (tijdOver <= 0) {
+                verwerkFout("TIJD OM!");
+            }
+        }, 1000);
+    }
+
+    function verwerkGoed() {
+        streak++;
+        streakEl.innerText = `Streak: ${streak}/3`;
+        feedbackEl.innerText = "GOED GEEDAAN!";
+        feedbackEl.className = "feedback success";
+        
+        if (streak >= 3) {
+            alert("GEWONNEN! Je hebt een streak van 3!");
+            streak = 0;
+            streakEl.innerText = `Streak: 0/3`;
+            beschikbareVragen = [...woordenLijst];
+        }
+        nieuwWoord();
+    }
+
+    function verwerkFout(invoer) {
+        streak = 0;
+        streakEl.innerText = `Streak: 0/3`;
+        feedbackEl.innerText = invoer === "TIJD OM!" ? `TE LAAT! Het was: ${huidigItem.woord}` : `FOUT! Het was: ${huidigItem.woord}`;
+        feedbackEl.className = "feedback error";
+        beschikbareVragen = [...woordenLijst];
+        setTimeout(nieuwWoord, 2000); // Wacht even zodat ze de fout kunnen zien
+    }
+
+    inputEl.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const gok = inputEl.value.toLowerCase().trim();
+            if (gok === huidigItem.woord || huidigItem.fouten.includes(gok)) {
+                verwerkGoed();
+            } else {
+                verwerkFout(inputEl.value);
+            }
+        }
+    });
+
+    nieuwWoord();
+    startTimer();
+</script>
+
+</body>
+</html>
