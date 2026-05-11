@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Password Game - Online</title>
+    <title>The Password Game - School Editie</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .game-container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 500px; text-align: center; }
-        h1 { color: #333; margin-bottom: 5px; }
-        .streak { font-size: 1.2rem; color: #666; }
-        .timer { font-size: 2rem; font-weight: bold; color: #e74c3c; margin: 15px 0; }
-        .hint-box { background: #f9f9f9; border: 1px solid #ddd; padding: 20px; border-radius: 10px; min-height: 80px; display: flex; align-items: center; justify-content: center; font-style: italic; margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; font-size: 1.2rem; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; transition: border-color 0.3s; }
-        input:focus { border-color: #3498db; }
-        .feedback { margin-top: 20px; font-weight: bold; min-height: 24px; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #eef2f7; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .game-container { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 90%; max-width: 600px; text-align: center; }
+        h1 { color: #2c3e50; margin-bottom: 5px; font-size: 2.5rem; }
+        .streak { font-size: 1.4rem; color: #7f8c8d; margin-bottom: 10px; }
+        .timer { font-size: 2.5rem; font-weight: bold; color: #e74c3c; margin: 20px 0; }
+        .hint-box { background: #fdfdfd; border: 2px dashed #3498db; padding: 25px; border-radius: 12px; min-height: 100px; display: flex; align-items: center; justify-content: center; font-style: italic; font-size: 1.2rem; margin-bottom: 25px; color: #34495e; }
+        input { width: 100%; padding: 15px; font-size: 1.4rem; border: 3px solid #dfe6e9; border-radius: 10px; box-sizing: border-box; outline: none; transition: all 0.3s; text-align: center; }
+        input:focus { border-color: #3498db; box-shadow: 0 0 10px rgba(52,152,219,0.2); }
+        .feedback { margin-top: 25px; font-weight: bold; font-size: 1.1rem; min-height: 30px; }
         .success { color: #27ae60; }
         .error { color: #c0392b; }
+        .footer { margin-top: 20px; font-size: 0.8rem; color: #bdc3c7; }
     </style>
 </head>
 <body>
@@ -25,29 +26,60 @@
     <div class="streak" id="streak">Streak: 0/3</div>
     <div class="timer" id="timer">20</div>
     
-    <div class="hint-box" id="hint">Laden...</div>
+    <div class="hint-box" id="hint">Raadsel aan het laden...</div>
     
-    <input type="text" id="gokInput" placeholder="Typ het wachtwoord..." autocomplete="off">
+    <input type="text" id="gokInput" placeholder="Typ je antwoord..." autocomplete="off">
     
     <div class="feedback" id="feedback"></div>
+    <div class="footer">Druk op Enter om te controleren</div>
 </div>
 
 <script>
     const woordenLijst = [
-        {woord: "schaduw", fouten: ["schadu", "scaduw"], tip: "Ik loop met je mee, maar heb geen benen. In het donker ben ik weg."},
-        {woord: "stilte", fouten: ["stilt", "stite"], tip: "Als je mijn naam uitspreekt, breek je mij."},
-        {woord: "vlam", fouten: ["vuur", "vlammetje"], tip: "Ik eet alles, maar als ik drink dan ga ik dood."},
-        {woord: "spiegel", fouten: ["spegel", "spigel"], tip: "Ik heb geen stem, maar ik doe alles na wat jij doet."},
-        {woord: "horizon", fouten: ["horison"], tip: "Hoe dichterbij je komt, hoe verder ik wegloop."},
-        {woord: "toekomst", fouten: ["tokomst"], tip: "Ik ben er altijd, maar niemand heeft me ooit gezien."},
-        {woord: "herinnering", fouten: ["herinneringen"], tip: "Ik kom uit het verleden, maar woon in je hoofd."},
-        {woord: "sleutel", fouten: ["sleuteltje"], tip: "Ik kan deuren openen, maar ik kan zelf nooit naar binnen."},
-        {woord: "regen", fouten: ["regent"], tip: "Ik val wel, maar ik sta nooit meer op."},
-        {woord: "echo", fouten: ["eko"], tip: "Ik praat zonder mond en hoor zonder oren."},
-        {woord: "klok", fouten: ["horloge"], tip: "Ik loop altijd, maar kom nooit vooruit."},
-        {woord: "naam", fouten: ["voornaam"], tip: "Ik hoor bij jou, maar anderen gebruiken mij vaker."},
-        {woord: "spin", fouten: ["spinnetje"], tip: "Ik heb acht benen en bouw mijn eigen huis van draad."},
-        {woord: "piano", fouten: ["pianos"], tip: "Ik heb veel tanden, maar ik kan niet bijten."}
+        {woord: "piano", fouten: ["pianos", "pianoos", "piana"], tip: "Wat heeft sleutels maar geen deuren?"},
+        {woord: "handdoek", fouten: ["handdoeken", "handoek", "handdoekje"], tip: "Wat wordt natter hoe meer het droogt?"},
+        {woord: "gat", fouten: ["gaatje", "opening", "leegte"], tip: "Hoe meer je ervan afhaalt, hoe groter het wordt."},
+        {woord: "fles", fouten: ["flessen", "flesje"], tip: "Wat heeft een hals maar geen hoofd?"},
+        {woord: "water", fouten: ["vloeistof", "rivier"], tip: "Wat loopt zonder benen?"},
+        {woord: "kam", fouten: ["kammetje", "kammen"], tip: "Wat heeft tanden maar kan niet eten?"},
+        {woord: "licht", fouten: ["zonnestralen", "straal", "lamp"], tip: "Wat kan door glas gaan zonder het te breken?"},
+        {woord: "naald", fouten: ["naaldje", "speld"], tip: "Wat heeft één oog maar kan niet zien?"},
+        {woord: "klok", fouten: ["horloge", "wekker"], tip: "Wat heeft handen maar kan niet klappen?"},
+        {woord: "leeftijd", fouten: ["jaar", "jaren", "ouderdom"], tip: "Wat stijgt maar daalt nooit?"},
+        {woord: "belofte", fouten: ["beloftes", "trouw"], tip: "Wat kun je breken zonder het aan te raken?"},
+        {woord: "trap", fouten: ["trappen", "treden"], tip: "Wat gaat omhoog en omlaag zonder te bewegen?"},
+        {woord: "toekomst", fouten: ["later", "morgen"], tip: "Wat is altijd voor je, maar kun je nooit zien?"},
+        {woord: "9", fouten: ["negen", "9", "6", "zes"], tip: "Wat wordt groter als je het omdraait?"},
+        {woord: "kaart", fouten: ["landkaart", "plattegrond", "atlas"], tip: "Wat heeft steden maar geen huizen, rivieren maar geen water?"},
+        {woord: "gesprek", fouten: ["praatje", "gesprekje", "dialoog"], tip: "Wat kun je vasthouden zonder het ooit aan te raken?"},
+        {woord: "tafel", fouten: ["tafeltje", "bureau"], tip: "Wat heeft vier poten maar kan niet lopen?"},
+        {woord: "rivier", fouten: ["beek", "stroom"], tip: "Wat heeft een bed maar slaapt nooit?"},
+        {woord: "mais", fouten: ["maïs", "corn", "maispit"], tip: "Wat heeft oren maar hoort niets?"},
+        {woord: "tijd", fouten: ["uren", "minuten", "klok"], tip: "Wat vliegt zonder vleugels?"},
+        {woord: "spons", fouten: ["sponsje"], tip: "Wat zit vol gaten maar houdt toch water vast?"},
+        {woord: "boek", fouten: ["leesboek", "boeken", "boekje"], tip: "Wat heeft woorden maar spreekt nooit?"},
+        {woord: "postzegel", fouten: ["zegel", "stempel"], tip: "Wat gaat rond de wereld maar blijft in een hoek?"},
+        {woord: "ei", fouten: ["eieren", "eitje"], tip: "Wat kun je niet gebruiken voordat je het hebt gebroken?"},
+        {woord: "alle", fouten: ["alle maanden", "iedere", "elke"], tip: "Welke maand heeft 28 dagen?"},
+        {woord: "houtskool", fouten: ["kool", "skool", "houtkool"], tip: "Zwart bij aankoop, rood bij gebruik, grijs bij weggooien?"},
+        {woord: "munt", fouten: ["geld", "muntje", "geldstuk"], tip: "Wat heeft een staart en een kop maar geen lichaam?"},
+        {woord: "geluid", fouten: ["lawaai", "herrie"], tip: "Wat kun je horen maar niet zien of aanraken?"},
+        {woord: "naam", fouten: ["voornaam", "achternaam"], tip: "Wat is van jou maar wordt vaker door anderen gebruikt?"},
+        {woord: "pinguin", fouten: ["pinguïn", "penguin", "pinguin"], tip: "Wat heeft vleugels maar kan niet vliegen?"},
+        {woord: "telefoon", fouten: ["mobiel", "smartphone", "gsm"], tip: "Wat heeft een ring maar geen vinger?"},
+        {woord: "regen", fouten: ["bui", "neerslag"], tip: "Wat valt maar doet zich geen pijn?"},
+        {woord: "verkoudheid", fouten: ["griep", "verkouden"], tip: "Wat kun je vangen maar niet gooien?"},
+        {woord: "adem", fouten: ["lucht", "ademhaling"], tip: "Licht als een veertje, maar onmogelijk lang vast te houden?"},
+        {woord: "schoen", fouten: ["schoenen", "gymp"], tip: "Wat heeft een tong maar praat niet?"},
+        {woord: "droom", fouten: ["dromen", "visioen"], tip: "Wat kun je zien met gesloten ogen?"},
+        {woord: "artisjok", fouten: ["groente"], tip: "Wat heeft een hart dat niet klopt?"},
+        {woord: "stoel", fouten: ["zetel", "fauteuil"], tip: "Wat heeft armen maar kan niets optillen?"},
+        {woord: "gedachten", fouten: ["gedachte", "denken"], tip: "Wat is sneller dan de wind?"},
+        {woord: "m", fouten: ["letter m", "de m"], tip: "Eén keer in een minuut, twee keer in een moment, nooit in 1000 jaar?"},
+        {woord: "stok", fouten: ["tak", "staf"], tip: "Wat heeft een begin, een einde, maar geen midden?"},
+        {woord: "kaars", fouten: ["kaarsje", "theelicht"], tip: "Wat wordt kleiner als het groter (ouder) wordt?"},
+        {woord: "echo", fouten: ["eko", "galm"], tip: "Wat kan niet praten maar antwoordt altijd?"},
+        {woord: "stilte", fouten: ["stilt", "rust"], tip: "Wat verdwijnt zodra je zijn naam zegt?"}
     ];
 
     let streak = 0;
@@ -71,9 +103,11 @@
         
         hintEl.innerText = huidigItem.tip;
         tijdOver = 20;
+        timerEl.innerText = tijdOver;
         inputEl.value = "";
         feedbackEl.innerText = "";
         inputEl.focus();
+        startTimer();
     }
 
     function startTimer() {
@@ -90,25 +124,28 @@
     function verwerkGoed() {
         streak++;
         streakEl.innerText = `Streak: ${streak}/3`;
-        feedbackEl.innerText = "GOED GEEDAAN!";
+        feedbackEl.innerText = "GOED GEEDAAN! Volgende...";
         feedbackEl.className = "feedback success";
         
         if (streak >= 3) {
-            alert("GEWONNEN! Je hebt een streak van 3!");
+            alert("🔥 GEWONNEN! Je hebt de streak van 3 gehaald!");
             streak = 0;
             streakEl.innerText = `Streak: 0/3`;
             beschikbareVragen = [...woordenLijst];
         }
-        nieuwWoord();
+        setTimeout(nieuwWoord, 800);
     }
 
     function verwerkFout(invoer) {
         streak = 0;
         streakEl.innerText = `Streak: 0/3`;
-        feedbackEl.innerText = invoer === "TIJD OM!" ? `TE LAAT! Het was: ${huidigItem.woord}` : `FOUT! Het was: ${huidigItem.woord}`;
+        let antwoord = huidigItem.woord;
+        feedbackEl.innerText = invoer === "TIJD OM!" ? `TE LAAT! Het was: ${antwoord}` : `FOUT! Het was: ${antwoord}`;
         feedbackEl.className = "feedback error";
-        beschikbareVragen = [...woordenLijst];
-        setTimeout(nieuwWoord, 2000); // Wacht even zodat ze de fout kunnen zien
+        beschikbareVragen = [...woordenLijst]; 
+        
+        clearInterval(timerInterval);
+        setTimeout(nieuwWoord, 2500); 
     }
 
     inputEl.addEventListener('keypress', (e) => {
@@ -123,7 +160,6 @@
     });
 
     nieuwWoord();
-    startTimer();
 </script>
 
 </body>
