@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Password Game - Meerdere Antwoorden</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #eef2f7; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .game-container { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 90%; max-width: 600px; text-align: center; position: relative; }
+        h1 { color: #2c3e50; margin-bottom: 5px; font-size: 2.5rem; }
+        .score { font-size: 1.4rem; color: #7f8c8d; margin-bottom: 10px; }
+        .timer { font-size: 3rem; font-weight: bold; color: #e74c3c; margin: 10px 0; }
+        .hint-box { background: #fdfdfd; border: 2px dashed #3498db; padding: 25px; border-radius: 12px; min-height: 100px; display: flex; align-items: center; justify-content: center; font-style: italic; font-size: 1.2rem; margin-bottom: 25px; color: #34495e; line-height: 1.4; }
+        
+        .input-group { position: relative; margin-bottom: 10px; }
+        input { width: 100%; padding: 15px; font-size: 1.4rem; border: 3px solid #dfe6e9; border-radius: 10px; box-sizing: border-box; outline: none; transition: all 0.3s; text-align: center; }
+        input:focus { border-color: #3498db; box-shadow: 0 0 10px rgba(52,152,219,0.2); }
+        
+        .skip-btn { background: #f39c12; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-top: 10px; font-weight: bold; transition: opacity 0.3s; }
+        .skip-btn:disabled { background: #bdc3c7; cursor: not-allowed; }
+
+        .feedback { margin-top: 25px; font-weight: bold; font-size: 1.1rem; min-height: 30px; }
+        .success { color: #27ae60; }
+        .error { color: #c0392b; }
+        
+        #overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); border-radius: 20px; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
+        .main-btn { background: #3498db; color: white; border: none; padding: 15px 30px; font-size: 1.2rem; border-radius: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <div id="overlay">
+        <h2 style="font-size: 2.5rem; color: #2c3e50;">Tijd is op!</h2>
+        <p style="font-size: 1.5rem;">Jouw score: <span id="finalScore">0</span></p>
+        <button class="main-btn" onclick="startSpel()">Opnieuw Spelen</button>
+    </div>
+
+    <h1>Password Game</h1>
+    <div class="score" id="score">Score: 0</div>
+    <div class="timer" id="timer">60</div>
+    <div class="hint-box" id="hint">Druk op Enter om te beginnen!</div>
+    
+    <div class="input-group">
+        <input type="text" id="gokInput" placeholder="Typ je antwoord..." autocomplete="off">
+        <button id="skipBtn" class="skip-btn" onclick="skipVraag()">Skip (2 over)</button>
+    </div>
+    
+    <div class="feedback" id="feedback"></div>
+</div>
+
+<script>
+    // Elk raadsel heeft nu een lijst met 'opties' die allemaal goed zijn
+    const woordenLijst = [
+        {opties: ["piano", "vleugel", "keyboard", "orgel", "accordeon"], tip: "Ik heb toetsen, maar ik kan niet typen. Ik heb hamers, maar ik kan niet timmeren."},
+        {opties: ["handdoek", "handdoeken", "doek"], tip: "Wat wordt natter naarmate jij jezelf meer afdroogt?"},
+        {opties: ["gat", "gaatje", "kuil", "tunnel", "put"], tip: "Hoe meer je ervan weghaalt, hoe groter het wordt."},
+        {opties: ["fles", "gitaar", "viool", "vaas", "trui", "overhemd"], tip: "Wat heeft een hals, maar geen hoofd?"},
+        {opties: ["water", "rivier", "neus", "kraan", "tijd", "klok"], tip: "Wat loopt wel, maar heeft geen benen?"},
+        {opties: ["kam", "rits", "zaag", "tandwiel"], tip: "Wat heeft tanden, maar kan niet bijten?"},
+        {opties: ["licht", "zonlicht", "straal", "gedachte", "radio"], tip: "Wat kan door glas gaan zonder het te breken?"},
+        {opties: ["naald", "aardappel", "orkaan", "naaldje", "dobbelsteen"], tip: "Wat heeft één oog, maar kan absoluut niets zien?"},
+        {opties: ["klok", "horloge", "wekker"], tip: "Wat heeft handen, maar kan niet klappen?"},
+        {opties: ["leeftijd", "jaren", "lengte"], tip: "Wat wordt elk jaar meer, maar nooit minder?"},
+        {opties: ["belofte", "stilte", "record", "hart", "afspraak"], tip: "Wat kun je breken zonder het aan te raken?"},
+        {opties: ["trap", "ladder", "weg", "temperatuur", "stoeltjeslift"], tip: "Wat gaat omhoog en omlaag, maar beweegt zelf nooit?"},
+        {opties: ["toekomst", "morgen", "later"], tip: "Wat is er altijd, maar komt nooit aan?"},
+        {opties: ["9", "negen"], tip: "Welk cijfer wordt groter als je het op zijn kop zet?"},
+        {opties: ["kaart", "atlas", "plattegrond", "wereldkaart"], tip: "Ik heb steden maar geen huizen, en bergen maar geen bomen. Wat ben ik?"},
+        {opties: ["naam", "je naam"], tip: "Het is van jou, maar anderen gebruiken het veel vaker dan jijzelf."},
+        {opties: ["tafel", "stoel", "bank", "bed"], tip: "Wat heeft vier poten, maar kan niet lopen?"},
+        {opties: ["rivier", "beek", "stroom"], tip: "Wat heeft een mond, maar kan niet praten?"},
+        {opties: ["tijd", "vogel", "vliegtuig", "gedachte"], tip: "Wat vliegt voorbij zonder vleugels?"},
+        {opties: ["spons", "sponsje", "net", "zeef"], tip: "Wat zit vol gaten, maar houdt toch water vast?"},
+        {opties: ["boek", "krant", "tijdschrift", "schrift"], tip: "Wat heeft honderden bladen, maar is geen boom?"},
+        {opties: ["postzegel", "zegel"], tip: "Wat blijft in een hoekje zitten, terwijl het de hele wereld rondreist?"},
+        {opties: ["ei", "stilte", "belofte", "ijs", "record"], tip: "Wat moet je eerst breken voordat je het kunt gebruiken?"},
+        {opties: ["alle", "allemaal", "12"], tip: "Sommige maanden hebben 30 dagen, sommige 31. Hoeveel hebben er 28?"},
+        {opties: ["houtskool", "kool", "as"], tip: "Zwart als je het koopt, rood als je het gebruikt en grijs als je het weggooit?"},
+        {opties: ["munt", "geld", "kwartje", "euro"], tip: "Wat heeft een kop en een munt, maar geen lichaam?"},
+        {opties: ["geluid", "wind", "echo", "muziek"], tip: "Wat kun je wel horen, maar niet zien of aanraken?"},
+        {opties: ["sneeuw", "regen", "hagel", "bladeren"], tip: "Wat valt er uit de lucht zonder zich te bezeren?"},
+        {opties: ["pinguin", "neus", "molen", "gebouw", "vogelverschrikker", "vliegtuig"], tip: "Wat heeft vleugels, maar kan niet uit zichzelf vliegen?"},
+        {opties: ["telefoon", "gsm", "mobiel", "wekkerradio"], tip: "Wat heeft een ring, maar geen vinger?"},
+        {opties: ["regen", "waterval", "temperatuur"], tip: "Wat valt naar beneden, maar gaat nooit meer omhoog?"},
+        {opties: ["verkoudheid", "griep", "bal", "dief", "blik"], tip: "Wat kun je wel vangen, maar niet weggooien?"},
+        {opties: ["adem", "lucht"], tip: "Het is heel licht, maar zelfs de sterkste man kan het niet lang vasthouden."},
+        {opties: ["schoen", "schoenen", "schaats", "bel", "vlam"], tip: "Wat heeft een tong, maar kan niet praten?"},
+        {opties: ["droom", "dromen", "gedachte"], tip: "Wat kun je alleen zien als je je ogen dicht hebt?"},
+        {opties: ["schaduw"], tip: "Ik loop met je mee, maar ik heb geen voeten. In de zon ben ik er, in het donker niet."},
+        {opties: ["bezem", "dweil", "veger"], tip: "Wat danst de hele dag op één been door het huis?"},
+        {opties: ["spiegel", "boek", "stoel"], tip: "Wat heeft geen gezicht, maar wel een rug?"},
+        {opties: ["handschoen", "handschoenen"], tip: "Wat heeft tien vingers, maar geen vlees of bloed?"},
+        {opties: ["m", "de m"], tip: "Wat zit één keer in een minuut, twee keer in een moment, maar nooit in een eeuw?"},
+        {opties: ["vuur", "vlam"], tip: "Ik heb geen mond, maar ik vreet alles op. Water is mijn vijand."},
+        {opties: ["kaars", "potlood", "zeep"], tip: "Wat wordt kleiner naarmate het ouder wordt?"},
+        {opties: ["echo"], tip: "Wat heeft geen mond, maar geeft op alles antwoord?"},
+        {opties: ["stilte", "rust"], tip: "Wat verbreek je zodra je de naam ervan uitspreekt?"}
+    ];
+
+    let score = 0;
+    let tijdOver = 60;
+    let skipsOver = 2;
+    let huidigItem = null;
+    let timerInterval = null;
+    let gameGestart = false;
+    let beschikbareVragen = [...woordenLijst];
+
+    const hintEl = document.getElementById('hint');
+    const timerEl = document.getElementById('timer');
+    const scoreEl = document.getElementById('score');
+    const inputEl = document.getElementById('gokInput');
+    const feedbackEl = document.getElementById('feedback');
+    const overlayEl = document.getElementById('overlay');
+    const finalScoreEl = document.getElementById('finalScore');
+    const skipBtn = document.getElementById('skipBtn');
+
+    function startSpel() {
+        gameGestart = true;
+        score = 0;
+        tijdOver = 60;
+        skipsOver = 2;
+        scoreEl.innerText = `Score: ${score}`;
+        timerEl.innerText = tijdOver;
+        overlayEl.style.display = "none";
+        feedbackEl.innerText = "";
+        beschikbareVragen = [...woordenLijst];
+        updateSkipUI();
+        startTimer();
+        nieuwWoord();
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            tijdOver--;
+            timerEl.innerText = tijdOver;
+            if (tijdOver <= 0) eindeSpel();
+        }, 1000);
+    }
+
+    function nieuwWoord() {
+        if (beschikbareVragen.length === 0) beschikbareVragen = [...woordenLijst];
+        const index = Math.floor(Math.random() * beschikbareVragen.length);
+        huidigItem = beschikbareVragen[index];
+        beschikbareVragen.splice(index, 1);
+        
+        hintEl.innerText = huidigItem.tip;
+        inputEl.value = "";
+        inputEl.focus();
+    }
+
+    function verwerkAntwoord() {
+        const gok = inputEl.value.toLowerCase().trim();
+        if (gok === "") return;
+
+        // Check of de gok in de lijst met opties staat
+        if (huidigItem.opties.includes(gok)) {
+            goedGedaan("GOED!");
+        } else {
+            feedbackEl.innerText = `FOUT! Mogelijk antwoord: ${huidigItem.opties[0]}`;
+            feedbackEl.className = "feedback error";
+            setTimeout(() => {
+                feedbackEl.innerText = "";
+                nieuwWoord();
+            }, 1000);
+        }
+    }
+
+    function goedGedaan(tekst) {
+        score++;
+        scoreEl.innerText = `Score: ${score}`;
+        feedbackEl.innerText = tekst;
+        feedbackEl.className = "feedback success";
+        nieuwWoord();
+    }
+
+    function skipVraag() {
+        if (!gameGestart || skipsOver <= 0) return;
+        skipsOver--;
+        updateSkipUI();
+        goedGedaan("OVERGESLAGEN (+1)");
+    }
+
+    function updateSkipUI() {
+        skipBtn.innerText = `Skip (${skipsOver} over)`;
+        skipBtn.disabled = (skipsOver <= 0);
+    }
+
+    function eindeSpel() {
+        clearInterval(timerInterval);
+        gameGestart = false;
+        overlayEl.style.display = "flex";
+        finalScoreEl.innerText = score;
+    }
+
+    inputEl.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            if (!gameGestart) startSpel();
+            else verwerkAntwoord();
+        }
+    });
+
+    inputEl.focus();
+</script>
+</body>
+</html>
