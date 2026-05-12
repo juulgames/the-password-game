@@ -1,0 +1,143 @@
+<script>
+    const woordenLijst = [
+        {woord: "piano", fouten: ["pianos", "vleugel"], tip: "Ik heb toetsen, maar ik kan niet typen. Ik heb hamers, maar ik kan niet timmeren."},
+        {woord: "handdoek", fouten: ["handdoeken"], tip: "Wat wordt natter naarmate jij jezelf meer afdroogt?"},
+        {woord: "gat", fouten: ["gaatje", "kuil"], tip: "Hoe meer je ervan weghaalt, hoe groter het wordt."},
+        {woord: "fles", fouten: ["flessen"], tip: "Wat heeft een hals, maar geen hoofd?"},
+        {woord: "water", fouten: ["de regen"], tip: "Wat loopt wel, maar heeft geen benen?"},
+        {woord: "kam", fouten: ["borstel"], tip: "Wat heeft tanden, maar kan niet bijten?"},
+        {woord: "licht", fouten: ["zonlicht", "straal"], tip: "Wat kan door glas gaan zonder het te breken?"},
+        {woord: "naald", fouten: ["speld"], tip: "Wat heeft één oog, maar kan absoluut niets zien?"},
+        {woord: "klok", fouten: ["horloge", "wekker"], tip: "Wat loopt wel, maar komt nooit vooruit?"},
+        {woord: "leeftijd", fouten: ["jaren"], tip: "Wat wordt elk jaar meer, maar nooit minder?"},
+        {woord: "belofte", fouten: ["afspraak"], tip: "Wat kun je breken zonder het aan te raken of te laten vallen?"},
+        {woord: "trap", fouten: ["trappen"], tip: "Wat gaat omhoog en omlaag, maar beweegt zelf nooit?"},
+        {woord: "toekomst", fouten: ["morgen", "later"], tip: "Wat is er altijd, maar komt nooit aan?"},
+        {woord: "9", fouten: ["negen"], tip: "Welk cijfer wordt groter als je het op zijn kop zet?"},
+        {woord: "kaart", fouten: ["landkaart", "atlas"], tip: "Ik heb steden maar geen huizen, en bergen maar geen bomen. Wat ben ik?"},
+        {woord: "naam", fouten: ["je naam"], tip: "Het is van jou, maar anderen gebruiken het veel vaker dan jijzelf."},
+        {woord: "tafel", fouten: ["tafeltje"], tip: "Wat heeft vier poten, maar kan niet lopen?"},
+        {woord: "rivier", fouten: ["beek"], tip: "Wat heeft een mond, maar kan niet praten? (En een bed, maar slaapt nooit?)"},
+        {woord: "tijd", fouten: ["de tijd"], tip: "Wat vliegt voorbij zonder vleugels?"},
+        {woord: "spons", fouten: ["sponsje"], tip: "Wat zit vol gaten, maar houdt toch water vast?"},
+        {woord: "boek", fouten: ["boeken"], tip: "Wat heeft honderden bladen, maar is geen boom?"},
+        {woord: "postzegel", fouten: ["zegeltje"], tip: "Wat blijft in een hoekje zitten, terwijl het de hele wereld rondreist?"},
+        {woord: "ei", fouten: ["eieren"], tip: "Wat moet je eerst breken voordat je het kunt gebruiken?"},
+        {woord: "alle", fouten: ["allemaal"], tip: "Sommige maanden hebben 30 dagen, sommige 31. Hoeveel hebben er 28?"},
+        {woord: "houtskool", fouten: ["kool"], tip: "Wat is zwart als je het koopt, rood als je het gebruikt en grijs als je het weggooit?"},
+        {woord: "munt", fouten: ["muntje", "geld"], tip: "Wat heeft een kop en een munt, maar geen lichaam?"},
+        {woord: "geluid", fouten: ["lawaai"], tip: "Wat kun je wel horen, maar niet zien of aanraken?"},
+        {woord: "sneeuw", fouten: ["hagel"], tip: "Wat valt er uit de lucht zonder zich te bezeren?"},
+        {woord: "pinguin", fouten: ["pinguïn"], tip: "Welke vogel heeft vleugels, maar kan niet vliegen (en houdt van ijs)?"},
+        {woord: "telefoon", fouten: ["gsm", "mobiel"], tip: "Wat gaat er over, zonder dat er iets aan de overkant is?"},
+        {woord: "regen", fouten: ["bui"], tip: "Wat valt er naar beneden, maar gaat nooit meer omhoog?"},
+        {woord: "verkoudheid", fouten: ["griep"], tip: "Wat kun je wel vangen, maar niet weggooien?"},
+        {woord: "adem", fouten: ["lucht"], tip: "Het is heel licht, maar zelfs de sterkste man kan het niet lang vasthouden."},
+        {woord: "schoen", fouten: ["schoenen"], tip: "Wat heeft een tong, maar kan niet proeven of praten?"},
+        {woord: "droom", fouten: ["dromen"], tip: "Wat kun je alleen zien als je je ogen dicht hebt?"},
+        {woord: "schaduw", fouten: ["je schaduw"], tip: "Ik loop met je mee, maar ik heb geen voeten. In de zon ben ik er, in het donker ben ik weg."},
+        {woord: "bezem", fouten: ["veger"], tip: "Wat danst de hele dag op één been door het huis?"},
+        {woord: "spiegel", fouten: ["ruit"], tip: "Kijk naar mij en ik kijk terug. Ik heb geen gezicht, maar wel een rug."},
+        {woord: "handschoen", fouten: ["handschoenen"], tip: "Wat heeft tien vingers, maar geen vlees of bloed?"},
+        {woord: "m", fouten: ["de m"], tip: "Wat zit één keer in een minuut, twee keer in een moment, maar nooit in een eeuw?"},
+        {woord: "vuur", fouten: ["vlam"], tip: "Ik heb geen mond, maar ik vreet alles op. Water is mijn grootste vijand."},
+        {woord: "kaars", fouten: ["kaarsje"], tip: "Wat wordt kleiner naarmate het ouder wordt?"},
+        {woord: "echo", fouten: ["geluid"], tip: "Wat heeft geen mond, maar geeft op alles antwoord?"},
+        {woord: "stilte", fouten: ["rust"], tip: "Wat verbreek je zodra je de naam ervan uitspreekt?"}
+    ];
+
+    let score = 0;
+    let tijdOver = 60;
+    let huidigItem = null;
+    let timerInterval = null;
+    let gameGestart = false;
+    let beschikbareVragen = [...woordenLijst];
+
+    const hintEl = document.getElementById('hint');
+    const timerEl = document.getElementById('timer');
+    const scoreEl = document.getElementById('score');
+    const inputEl = document.getElementById('gokInput');
+    const feedbackEl = document.getElementById('feedback');
+    const overlayEl = document.getElementById('overlay');
+    const finalScoreEl = document.getElementById('finalScore');
+
+    function startSpel() {
+        gameGestart = true;
+        score = 0;
+        tijdOver = 60;
+        scoreEl.innerText = `Score: ${score}`;
+        timerEl.innerText = tijdOver;
+        overlayEl.style.display = "none";
+        feedbackEl.innerText = "";
+        beschikbareVragen = [...woordenLijst];
+        
+        startTimer();
+        nieuwWoord();
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            tijdOver--;
+            timerEl.innerText = tijdOver;
+            if (tijdOver <= 0) {
+                eindeSpel();
+            }
+        }, 1000);
+    }
+
+    function nieuwWoord() {
+        if (beschikbareVragen.length === 0) beschikbareVragen = [...woordenLijst];
+        const index = Math.floor(Math.random() * beschikbareVragen.length);
+        huidigItem = beschikbareVragen[index];
+        beschikbareVragen.splice(index, 1);
+        
+        hintEl.innerText = huidigItem.tip;
+        inputEl.value = "";
+        inputEl.focus();
+    }
+
+    function verwerkAntwoord() {
+        const gok = inputEl.value.toLowerCase().trim();
+        if (gok === "") return;
+
+        if (gok === huidigItem.woord || huidigItem.fouten.includes(gok)) {
+            score++;
+            scoreEl.innerText = `Score: ${score}`;
+            feedbackEl.innerText = "GOED!";
+            feedbackEl.className = "feedback success";
+            nieuwWoord();
+        } else {
+            feedbackEl.innerText = `FOUT! Het was: ${huidigItem.woord}`;
+            feedbackEl.className = "feedback error";
+            setTimeout(() => {
+                feedbackEl.innerText = "";
+                nieuwWoord();
+            }, 1000);
+        }
+    }
+
+    function eindeSpel() {
+        clearInterval(timerInterval);
+        gameGestart = false;
+        overlayEl.style.display = "flex";
+        finalScoreEl.innerText = score;
+        inputEl.blur();
+    }
+
+    function resetSpel() {
+        startSpel();
+    }
+
+    inputEl.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            if (!gameGestart) {
+                startSpel();
+            } else {
+                verwerkAntwoord();
+            }
+        }
+    });
+
+    inputEl.focus();
+</script>
